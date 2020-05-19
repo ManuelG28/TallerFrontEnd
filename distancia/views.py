@@ -1,24 +1,23 @@
 from django.shortcuts import render
-import requests
-from django.shortcuts import render, HttpResponse
-import requests
+from .forms import PredioForm
+from . models import Predio
+from django.http import HttpResponseRedirect
 # Create your views here.
-def measure(request):
-    # Verifica si hay un parámetro value en la petición GET
-    if 'value' in request.GET:
-        value = request.GET['value']
-        # Verifica si el value no esta vacio
-        if value:
-            # Crea el json para realizar la petición POST al Web Service
-            args = {'type': 'distancia', 'value': value}
-            response = requests.post('http://127.0.0.1:8000/distancia/', args)
-            # Convierte la respuesta en JSON
-            distancia_json = response.json()
+def predio_list(request):
+    return render(request,"Predio/predioList.html")
+def predio_form(request):
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = PredioForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            predio = Predio()
+            predio.latitud = form.cleaned_data["latitud"]
+            predio.longitud = form.cleaned_data["longitud"]
+            predio.terreno = form.cleaned_data["terreno"]
+            predio.area = form.cleaned_data["area"]
+            predio.value = 500
+            predio.save()
+            return HttpResponseRedirect('/predio/')
 
-    # Realiza una petición GET al Web Services
-    response = requests.get('http://127.0.0.1:8000/distancia/')
-    # Convierte la respuesta en JSON
-    distancias = response.json()
-    # Rederiza la respuesta en el template measure
-    print(distancias)
-    return render(request, "distancia/distancia.html", {'distancias': distancias})
+    return render(request,"Predio/predioForm.html")
